@@ -1,6 +1,6 @@
 var config = { //Налаштовуємо сцену
     type: Phaser.AUTO,
-    width: 5000,
+    width: 9600,
     height: 1080,
     pixelArt: true,
     debug: true,
@@ -19,6 +19,7 @@ var config = { //Налаштовуємо сцену
 };
 
 var game = new Phaser.Game(config);
+var player;
 
 var score = 0;
 var scoreText;
@@ -88,10 +89,8 @@ function preload () //Завантажуємо графіку для гри
     );
 }
 
-
 function create ()
 {
-    
     //Додаемо небо
     this.add.image(960, 540, 'sky').setScale(1);
 
@@ -105,12 +104,13 @@ function create ()
     platforms = this.physics.add.staticGroup();
 
     //Створюемо платформи
-    platforms.create(955, 880, 'ground').refreshBody().setScale(1);
-    
-    
+    for (let i = 0; i < 5; i++) {
+        platforms.create(955 + i * 1920, 880, 'ground').refreshBody().setScale(1);
+    }
+
 
     //Створюємо та налаштовуємо спрайт гравця
-    player = this.physics.add.sprite(100, 0, 'dude').setScale(2);
+    player = this.physics.add.sprite(960, 1, 'dude').setScale(2);
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
 
@@ -133,7 +133,7 @@ function create ()
 
     this.anims.create({
         key: 'turn',
-        frames: [ { key: 'dude', frame: 4 } ],
+        frames: [{ key: 'dude', frame: 4 }],
         frameRate: 20
     });
 
@@ -147,9 +147,8 @@ function create ()
     //Додано колізії між гравцем та платформами
     this.physics.add.collider(player, platforms);
 
-    this.cameras.main.setBounds(0, 0, 5000, 1080); // Встановлюємо межі камери на всю ширину та висоту сцени
-this.cameras.main.startFollow(player);
 }
+
 
 function update ()
 {
