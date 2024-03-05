@@ -1,6 +1,6 @@
 var config = { //Налаштовуємо сцену
     type: Phaser.AUTO,
-    width: 9600,
+    worldWidth: 9600,
     height: 1080,
     pixelArt: true,
     debug: true,
@@ -20,62 +20,16 @@ var config = { //Налаштовуємо сцену
 
 var game = new Phaser.Game(config);
 var player;
-
+var platform;
 var score = 0;
 var scoreText;
+var worldWidth;
 
 var record = 0
 
-//Функція підбору зірок
-function collectKiwi (player, kiwi)
-{
-    kiwi.disableBody(true, true);
-
-    //Нараховуємо бали
-    score += 10;
-    scoreText.setText('Score: ' + score);
-
-    //Створення бромб
-    var bomb = bombs.create(x, 16, 'bomb').setScale(0.1);
-    bomb.setBounce(1);
-    bomb.setCollideWorldBounds(true);
-    bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
-
-
-    //Перестворення зірочок
-    if (kiwis.countActive(true) === 0)
-    {
-        kiwis.children.iterate(function (child) {
-
-            child.enableBody(true, child.x, 0, true, true);
-            child.anims.play('kiwi_anim');
-            child.setScale(1.5);
-        });
-
-        var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
-    }
-}
-
-//Після зіткнення 3
-function hitBomb (player, bomb)
-{
-    this.physics.pause();
-    player.setTint(0xff0000);
-    player.anims.play('turn');
-    gameOver = true;
-
-    this.scene.restart();
-
-    if(score > record){
-        record = score;
-        document.getElementById("record_text").innerHTML = "Рекорд :<br/>" + record;
-    }
-    score = 0
-}
-
 function preload () //Завантажуємо графіку для гри
 {
-    this.load.image('cheese', 'assets/cheese.png');
+    this.load.image('platform', 'assets/platform.png');
     this.load.image('ground', 'assets/ground.png');
     this.load.image('sky', 'assets/sky.png');
     this.load.image('bomb', 'assets/bomb.png');
@@ -91,7 +45,19 @@ function preload () //Завантажуємо графіку для гри
 
 function create ()
 {
+
     //Додаемо небо
+
+
+    for (var x = 0; x < worldWidth; x = x + 400){
+        console.log(x)
+        platforms.create(x, 1000, 'sky').setOrigin(0, 0).refreshBody();
+    }
+
+    for (var x = 0; x < worldWidth; x = x + 400){
+        console.log(x)
+        platforms.create(x, 1000, 'ground').setOrigin(0, 0).refreshBody();
+    }
     this.add.image(960, 540, 'sky').setScale(1);
 
     //Створюемо текст з рахунком
@@ -105,7 +71,7 @@ function create ()
 
     //Створюемо платформи
     for (let i = 0; i < 5; i++) {
-        platforms.create(955 + i * 1920, 880, 'ground').refreshBody().setScale(1);
+        platforms.create(960 + i * 1920, 900, 'ground').refreshBody().setScale(1);
     }
 
 
@@ -114,10 +80,17 @@ function create ()
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
 
+    //Налаштування камери
+    this.cameras.main.setBounds(0, 0, worldWidth, window.innerHeight);
+    this.physics.world.setBounds(0, 0, worldWidth, window.innerHeight);
+
+    //Слідкування камери за гравцем
+    this.cameras.main.startFollow(player)
+
     //Створюемо та налаштовуємо фізичний об'єкт бомби
     bombs = this.physics.add.group();
     this.physics.add.collider(bombs, platforms);
-    this.physics.add.collider(player, bombs, hitBomb, null, this);
+    this.physics.add.collider(player, bombs, null, this);
 
     //Змінено гравітацію гравця
     player.body.setGravityY(0)
