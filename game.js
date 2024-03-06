@@ -48,17 +48,17 @@ function create ()
 
     //Додаемо небо
 
+    this.add.tileSprite(0, 0, worldWidth, 1080, "sky")
+        .setOrigin(0, 0)
+        .setScale(1)
+        .setDepth(0);
 
-    for (var x = 0; x < worldWidth; x = x + 400){
-        console.log(x)
-        platforms.create(x, 1000, 'sky').setOrigin(0, 0).refreshBody();
-    }
 
     for (var x = 0; x < worldWidth; x = x + 400){
         console.log(x)
         platforms.create(x, 1000, 'ground').setOrigin(0, 0).refreshBody();
     }
-    this.add.image(960, 540, 'sky').setScale(1);
+   // this.add.image(960, 540, 'sky').setScale(1);
 
     //Створюемо текст з рахунком
     scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
