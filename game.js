@@ -23,15 +23,21 @@ var player;
 var platform;
 var score = 0;
 var scoreText;
-var worldWidth;
+var worldWidth = config.worldWidth * 2;
+var star;
+var alien;
+var spaceship;
 
 var record = 0
 
 function preload () //Завантажуємо графіку для гри
 {
     this.load.image('platform', 'assets/platform.png');
+    this.load.image('spaceship', 'assets/spaceship.png');
+    this.load.image('alien', 'assets/alien.png');
+    this.load.image('star', 'assets/mountain.png');
     this.load.image('ground', 'assets/ground.png');
-    this.load.image('sky', 'assets/sky.png');
+    this.load.image('fon+', 'assets/fon+.png');
     this.load.image('bomb', 'assets/bomb.png');
     this.load.spritesheet('dude', 
         'assets/dude.png',
@@ -48,35 +54,56 @@ function create ()
 
     //Додаемо небо
 
-    this.add.tileSprite(0, 0, worldWidth, 1080, "sky")
+    this.add.tileSprite(0, 0, worldWidth, 1080, "fon+")
         .setOrigin(0, 0)
         .setScale(1)
         .setDepth(0);
 
-
-    for (var x = 0; x < worldWidth; x = x + 400){
-        console.log(x)
-        platforms.create(x, 1000, 'ground').setOrigin(0, 0).refreshBody();
-    }
-   // this.add.image(960, 540, 'sky').setScale(1);
-
     //Створюемо текст з рахунком
-    scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
+    //scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
 
     //Ініціалізуємо курсор Phaser
     cursors = this.input.keyboard.createCursorKeys();
 
-    //Створюемо фізичну групу платформ
+    //Створюемо фізичну групу
     platforms = this.physics.add.staticGroup();
+    star = this.physics.add.group();
+    alien = this.physics.add.group();
+    spaceship = this.physics.add.group();
 
     //Створюемо платформи
-    for (let i = 0; i < 5; i++) {
-        platforms.create(960 + i * 1920, 900, 'ground').refreshBody().setScale(1);
+    for (var x = 0; x < worldWidth; x = x + 400){
+        console.log(x);
+        platforms.create(x, 1080, 'ground').setOrigin(0, 0).refreshBody().setDepth(1);
     }
 
+    for (let i = 0; i < 5; i++) {
+        platforms.create(960 + i * 1920, 900, 'ground').refreshBody().setScale(1).setDepth(1);
+    }
+    //Створюємо об'єкти декорації
+    for (let x = 0; x < worldWidth; x += Phaser.Math.FloatBetween(750, 1250)) {
+        star.create(x, 180, 'star')
+            .setOrigin(0.1, 0.1)
+            .setScale(Phaser.Math.FloatBetween(0.5, 3.5))
+            .setDepth(Phaser.Math.Between(1,10));
+    }
+
+    for (let x = 0; x < worldWidth; x += Phaser.Math.FloatBetween(1500, 2000)) {
+        alien.create(x, 180, 'alien')
+            .setOrigin(1, 0)
+            .setScale(Phaser.Math.FloatBetween(0.1, 0.3))
+            .setDepth(Phaser.Math.Between(1,10));
+    }
+
+    for (let x = 0; x < worldWidth; x += Phaser.Math.FloatBetween(1000, 1250)) {
+        spaceship.create(x, 180, 'spaceship')
+            .setOrigin(0, 0)
+            .setScale(Phaser.Math.FloatBetween(0.1, 0.3))
+            .setDepth(Phaser.Math.Between(1,10));
+    }
 
     //Створюємо та налаштовуємо спрайт гравця
-    player = this.physics.add.sprite(960, 1, 'dude').setScale(2);
+    player = this.physics.add.sprite(960, 1, 'dude').setScale(2).setDepth(4);
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
 
@@ -94,7 +121,6 @@ function create ()
 
     //Змінено гравітацію гравця
     player.body.setGravityY(0)
-
 
     //Створюємо та налаштовуємо анімації
     this.anims.create({
@@ -117,8 +143,11 @@ function create ()
         repeat: -1
     });
 
-    //Додано колізії між гравцем та платформами
+    //Додано колізії
     this.physics.add.collider(player, platforms);
+    this.physics.add.collider(star, platforms);
+    this.physics.add.collider(alien, platforms);
+    this.physics.add.collider(spaceship, platforms);
 
 }
 
