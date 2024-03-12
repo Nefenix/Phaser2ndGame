@@ -27,11 +27,12 @@ var worldWidth = config.worldWidth * 2;
 var star;
 var alien;
 var spaceship;
-
+var rubin;
 var record = 0
 
 function preload () //Завантажуємо графіку для гри
-{
+{   
+    this.load.image('rubin', 'asets/benz.png');
     this.load.image('platform', 'assets/platform.png');
     this.load.image('spaceship', 'assets/spaceship.png');
     this.load.image('alien', 'assets/alien.png');
@@ -72,32 +73,46 @@ function create ()
     spaceship = this.physics.add.group();
 
     //Створюемо платформи
-    for (var x = 0; x < worldWidth; x = x + 400){
-        console.log(x);
-        platforms.create(x, 1080, 'ground').setOrigin(0, 0).refreshBody().setDepth(1);
+    for (var x = 0; x < worldWidth; x = x + 1000){
+        //console.log(x);
+        platforms
+            .create(x,Phaser.Math.Between(600,750), 'platform')
+            .setOrigin(0, 0)
+            .refreshBody()
+            .setDepth(1);
+    }
+
+    for (var x = 0; x < worldWidth; x = x + 1200){
+        //console.log(x);
+        platforms
+            .create(x,Phaser.Math.Between(500,550), 'platform')
+            .setOrigin(0, 0)
+            .refreshBody()
+            .setDepth(1);
     }
 
     for (let i = 0; i < 5; i++) {
-        platforms.create(960 + i * 1920, 900, 'ground').refreshBody().setScale(1).setDepth(1);
+       platforms.create(960 + i * 1920, 900, 'ground').refreshBody().setScale(1).setDepth(1);
     }
+
     //Створюємо об'єкти декорації
     for (let x = 0; x < worldWidth; x += Phaser.Math.FloatBetween(750, 1250)) {
         star.create(x, 180, 'star')
-            .setOrigin(0.1, 0.1)
+            .setOrigin(0.4, 0.4)
             .setScale(Phaser.Math.FloatBetween(0.5, 3.5))
             .setDepth(Phaser.Math.Between(1,10));
     }
 
     for (let x = 0; x < worldWidth; x += Phaser.Math.FloatBetween(1500, 2000)) {
         alien.create(x, 180, 'alien')
-            .setOrigin(1, 0)
+            .setOrigin(0.7, 0.7)
             .setScale(Phaser.Math.FloatBetween(0.1, 0.3))
             .setDepth(Phaser.Math.Between(1,10));
     }
 
     for (let x = 0; x < worldWidth; x += Phaser.Math.FloatBetween(1000, 1250)) {
         spaceship.create(x, 180, 'spaceship')
-            .setOrigin(0, 0)
+            .setOrigin(0.4, 0.4)
             .setScale(Phaser.Math.FloatBetween(0.1, 0.3))
             .setDepth(Phaser.Math.Between(1,10));
     }
@@ -113,6 +128,15 @@ function create ()
 
     //Слідкування камери за гравцем
     this.cameras.main.startFollow(player)
+
+    rubin = this.physics.add.group({ 
+        key: 'rubin', 
+        repeat: 11, 
+        setXY: { x: 12, y: 0, stepX: 70 } 
+    }); 
+    rubin.children.iterate(function (child) { 
+        child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8)); 
+    }); 
 
     //Створюемо та налаштовуємо фізичний об'єкт бомби
     bombs = this.physics.add.group();
@@ -148,7 +172,8 @@ function create ()
     this.physics.add.collider(star, platforms);
     this.physics.add.collider(alien, platforms);
     this.physics.add.collider(spaceship, platforms);
-
+    this.physics.add.collider(rubin, platforms); 
+    this.physics.add.collider(player, stars, collectStar, null, this);
 }
 
 
@@ -175,4 +200,16 @@ function update ()
     {
         player.setVelocityY(-330);
     }
+    function collectStar(player, star) { 
+        star.disableBody(true, true); 
+        score += 10; 
+        scoreText.setText('Score: ' + score); 
+        if (stars.countActive(true) === 0) { 
+            increaseLevel(); 
+            stars.children.iterate(function (child) { 
+                child.enableBody(true, child.x, 0, true, true); 
+            }); 
+           
+        } 
+    } 
 }
