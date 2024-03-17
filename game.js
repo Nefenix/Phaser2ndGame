@@ -25,12 +25,15 @@ var player;
 var platform;
 var score = 0;
 var scoreText;
+var level = 1;
+var levelText;
 var worldWidth = config.width * 2;
 var star;
 var alien;
 var spaceship;
 var rubin;
 var record = 0;
+var recordText;
 var bombs;
 
 
@@ -63,11 +66,6 @@ function create() {
         .setScale(1)
         .setDepth(0);
 
-    //Створюемо текст з рахунком
-    //scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
-
-
-
     //Створюемо фізичну групу
     platforms = this.physics.add.staticGroup();
     star = this.physics.add.group();
@@ -75,7 +73,7 @@ function create() {
     spaceship = this.physics.add.group();
 
     //Створюемо платформи
-    for (var x = 0; x < worldWidth; x = x + 1000) {
+    for (var x = -250; x < worldWidth; x = x + 1000) {
         platforms
             .create(x, Phaser.Math.Between(600, 750), 'platform')
             .setOrigin(0, 0)
@@ -83,7 +81,7 @@ function create() {
             .setDepth(1);
     }
 
-    for (var x = 0; x < worldWidth; x = x + 1200) {
+    for (var x = -250; x < worldWidth; x = x + 1200) {
         platforms
             .create(x, Phaser.Math.Between(500, 550), 'platform')
             .setOrigin(0, 0)
@@ -121,8 +119,10 @@ function create() {
     player = this.physics.add.sprite(960, 1, 'dude').setScale(2).setDepth(4);
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
+
     //Змінено гравітацію гравця
     player.body.setGravityY(0)
+
     //Ініціалізуємо курсор Phaser
     cursors = this.input.keyboard.createCursorKeys();
 
@@ -134,7 +134,7 @@ function create() {
     this.cameras.main.startFollow(player)
 
     rubin = this.physics.add.group({
-        key: 'rubin',
+        key: 'benz',
         repeat: 11,
         setXY: { x: 12, y: 0, stepX: 70 }
     });
@@ -175,6 +175,8 @@ function create() {
         repeat: -1
     });
 
+    scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' }); 
+    levelText = this.add.text(600, 16, 'Level: ' + level, { fontSize: '32px', fill: '#000' });
 
 
     //Додано колізії
@@ -183,7 +185,9 @@ function create() {
     this.physics.add.collider(alien, platforms);
     this.physics.add.collider(spaceship, platforms);
     this.physics.add.collider(bombs, platforms);
-    this.physics.add.collider(player, bombs, null, this);
+    this.physics.add.collider(rubin, platforms);
+    this.physics.add.collider(player, bombs, hitBomb, null, this);
+    this.physics.add.overlap(player, rubin, collectStar, null, this);
 }
 
 
@@ -207,15 +211,15 @@ function update() {
     }
 }
 
-function collectStar(player, star) {
+function collectStar(player, rubin) {
     star.disableBody(true, true);
 
     score += 10;
     scoreText.setText('Score: ' + score);
 
-    if (stars.countActive(true) === 0) {
-        stars.children.iterate(function (child) {
-
+    if (rubin.countActive(true) === 0) {
+        increaseLevel();
+        rubin.children.iterate(function (child) {
             child.enableBody(true, child.x, 0, true, true);
 
         });
@@ -240,3 +244,9 @@ function hitBomb(player, bomb) {
 
     gameOver = true;
 }
+
+function increaseLevel() { 
+    level++; 
+    levelText.setText('Level: ' + level); 
+}st
+
