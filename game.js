@@ -18,11 +18,9 @@ var config = { //Налаштовуємо сцену
     }
 };
 
-var game = new Phaser.Game(config);
-
 //змінні
 var player;
-var platform;
+var platforms;
 var score = 0;
 var scoreText;
 var level = 1;
@@ -31,15 +29,17 @@ var worldWidth = config.width * 2;
 var star;
 var alien;
 var spaceship;
-var rubin;
-var record = 0;
-var recordText;
+var rubins;
 var bombs;
-
+var gameOver = false;
+var game = new Phaser.Game(config);
+var life = 5;
+var lifeText; 
+//var reserButton;
 
 function preload() //Завантажуємо графіку для гри
 {
-    this.load.image('rubin', 'asets/benz.png');
+    this.load.image('rubin', 'assets/rubin.png');
     this.load.image('platform', 'assets/platform.png');
     this.load.image('spaceship', 'assets/spaceship.png');
     this.load.image('alien', 'assets/alien.png');
@@ -133,12 +133,12 @@ function create() {
     //Слідкування камери за гравцем
     this.cameras.main.startFollow(player)
 
-    rubin = this.physics.add.group({
-        key: 'benz',
-        repeat: 11,
-        setXY: { x: 12, y: 0, stepX: 70 }
+    rubins = this.physics.add.group({
+        key: 'rubin',
+        repeat: 100,
+        setXY: { x: 0, y: 0, stepX: 120 }
     });
-    rubin.children.iterate(function (child) {
+    rubins.children.iterate(function (child) {
         child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
     });
 
@@ -175,9 +175,26 @@ function create() {
         repeat: -1
     });
 
-    scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' }); 
-    levelText = this.add.text(600, 16, 'Level: ' + level, { fontSize: '32px', fill: '#000' });
+    scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#fff' }) 
+        .setOrigin(0, 0)
+        .setScrollFactor(0)
 
+    levelText = this.add.text(600, 16, 'Level: ' + level, { fontSize: '32px', fill: '#fff' })
+        .setOrigin(0, 0)
+        .setScrollFactor(0)
+
+    lifeText = this.add.text(1200, 16, showlife(), { fontSize: '32px', fill: '#fff' })
+        .setOrigin(0, 0)
+        .setScrollFactor(0)
+    
+    //var reserButton = this.add.text(400, 450, 'reset', { fontSize: '40px', fill: '#ccc'})
+        .setInteractive()
+        .setScrollFactor(0);
+
+    //resetButton.on('pointerdown', function(){
+        console.log('restart')
+        refreshBody()
+    //});
 
     //Додано колізії
     this.physics.add.collider(player, platforms);
@@ -185,9 +202,9 @@ function create() {
     this.physics.add.collider(alien, platforms);
     this.physics.add.collider(spaceship, platforms);
     this.physics.add.collider(bombs, platforms);
-    this.physics.add.collider(rubin, platforms);
+    this.physics.add.collider(rubins, platforms);
     this.physics.add.collider(player, bombs, hitBomb, null, this);
-    this.physics.add.overlap(player, rubin, collectStar, null, this);
+    this.physics.add.overlap(player, rubins, collectStar, null, this);
 }
 
 
@@ -212,14 +229,14 @@ function update() {
 }
 
 function collectStar(player, rubin) {
-    star.disableBody(true, true);
+    rubin.disableBody(true, true);
 
     score += 10;
     scoreText.setText('Score: ' + score);
 
-    if (rubin.countActive(true) === 0) {
+     if (rubins.countActive(true) === 0) {
         increaseLevel();
-        rubin.children.iterate(function (child) {
+        rubins.children.iterate(function (child) {
             child.enableBody(true, child.x, 0, true, true);
 
         });
@@ -232,6 +249,7 @@ function collectStar(player, rubin) {
         bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
         bomb.allowGravity = false;
 
+
     }
 }
 
@@ -239,14 +257,28 @@ function hitBomb(player, bomb) {
     this.physics.pause();
 
     player.setTint(0xff0000);
+    life-= 1
+    lifeText.setText(showlife())
 
     player.anims.play('turn');
 
-    gameOver = true;
+    if (life == 0) gameOver = true;
 }
 
 function increaseLevel() { 
     level++; 
     levelText.setText('Level: ' + level); 
-}st
+}
 
+function showlife() { 
+    var lifeLine = 'Життя: '
+
+    for (var i = 0; i < life; i++){
+        lifeLine += '💖'
+    }
+    return lifeLine
+}
+
+function refreshBody(){
+    console.log('game over')
+};
