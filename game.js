@@ -234,6 +234,16 @@ function collectStar(player, rubin) {
     score += 10;
     scoreText.setText('Score: ' + score);
 
+    if (score % 100 === 0) {
+        increaseLevel();
+        var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+        var bomb = bombs.create(x, 16, 'bomb');
+        bomb.setBounce(1);
+        bomb.setCollideWorldBounds(true);
+        bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        bomb.allowGravity = false;
+    }
+
      if (rubins.countActive(true) === 0) {
         increaseLevel();
         rubins.children.iterate(function (child) {
@@ -262,7 +272,9 @@ function hitBomb(player, bomb) {
 
     player.anims.play('turn');
 
-    if (life == 0) gameOver = true;
+    if (life <= 0) {
+        gameOver = true;
+    }
 }
 
 function increaseLevel() { 
