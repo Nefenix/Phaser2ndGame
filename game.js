@@ -270,7 +270,7 @@ function hitBomb(player, bomb) {
     life-= 1
     lifeText.setText(showlife())
 
-    player.anims.play('turn');
+    
 
     if (life <= 0) {
         gameOver = true;
