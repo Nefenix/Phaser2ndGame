@@ -8,7 +8,7 @@ var config = { //Налаштовуємо сцену
         default: 'arcade',
         arcade: {
             gravity: { y: 300 },
-            debug: true
+            debug: false
         }
     },
     scene: {
@@ -187,15 +187,6 @@ function create() {
         .setOrigin(0, 0)
         .setScrollFactor(0)
     
-    //var reserButton = this.add.text(400, 450, 'reset', { fontSize: '40px', fill: '#ccc'})
-        .setInteractive()
-        .setScrollFactor(0);
-
-    //resetButton.on('pointerdown', function(){
-        console.log('restart')
-        refreshBody()
-    //});
-
     //Додано колізії
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(star, platforms);
@@ -234,6 +225,10 @@ function collectStar(player, rubin) {
     score += 10;
     scoreText.setText('Score: ' + score);
 
+    if (score % 330 === 0) {
+        spawnNewStars(player.x);
+    }
+
     if (score % 100 === 0) {
         increaseLevel();
         var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
@@ -244,36 +239,44 @@ function collectStar(player, rubin) {
         bomb.allowGravity = false;
     }
 
-     if (rubins.countActive(true) === 0) {
+    if (rubins.countActive(true) === 0) {
         increaseLevel();
         rubins.children.iterate(function (child) {
             child.enableBody(true, child.x, 0, true, true);
-
+            child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
         });
 
         var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
-
         var bomb = bombs.create(x, 16, 'bomb');
         bomb.setBounce(1);
         bomb.setCollideWorldBounds(true);
         bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
         bomb.allowGravity = false;
-
-
     }
 }
 
+function spawnNewStars(playerX) {
+    for (let i = 0; i < 33; i++) {
+        let offsetX = Phaser.Math.Between(-50, 50); // Випадкове зміщення по X
+        let offsetY = Phaser.Math.Between(-50, 50); // Випадкове зміщення по Y
+        rubins.create(playerX + offsetX, 180 + offsetY, 'rubin');
+    }
+}
+
+
+
 function hitBomb(player, bomb) {
-    this.physics.pause();
 
     player.setTint(0xff0000);
     life-= 1
     lifeText.setText(showlife())
 
-    
+    bomb.disableBody(true,true);
 
     if (life <= 0) {
+        this.physics.pause();
         gameOver = true;
+    
     }
 }
 
